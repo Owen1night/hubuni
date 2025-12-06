@@ -1,10 +1,230 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Каталог университетов{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <div class="container">
+        <h2 class="section__title">Каталог университетов</h2>
+        <p class="section__subtitle">Фильтры помогут вам подобрать подходящий университет</p>
+
+        <!-- FILTERS PANEL -->
+        <div class="filters">
+            <div class="filters__group">
+                <label>Город</label>
+                <select id="f_city">
+                    <option value="">Все</option>
+                    <option value="almaty">Алматы</option>
+                    <option value="astana">Астана</option>
+                    <option value="shymkent">Шымкент</option>
+                    <option value="other">Другие</option>
+                </select>
+            </div>
+
+            <div class="filters__group">
+                <label>Тип</label>
+                <select id="f_type">
+                    <option value="">Все</option>
+                    <option value="public">Государственный</option>
+                    <option value="private">Частный</option>
+                </select>
+            </div>
+
+            <div class="filters__group">
+                <label>Гранты</label>
+                <select id="f_grants">
+                    <option value="">Все</option>
+                    <option value="1">Есть гранты</option>
+                    <option value="0">Без грантов</option>
+                </select>
+            </div>
+
+            <div class="filters__group filters__range">
+                <label>Стоимость (в год, ₸)</label>
+                <input type="number" id="f_min" placeholder="Мин">
+                <input type="number" id="f_max" placeholder="Макс">
+            </div>
+
+            <div class="filters__group">
+                <label>Язык обучения</label>
+                <select id="f_lang">
+                    <option value="">Все</option>
+                    <option value="kz">Казахский</option>
+                    <option value="ru">Русский</option>
+                    <option value="en">Английский</option>
+                </select>
+            </div>
+
+            <div class="filters__group">
+                <label>Общежитие</label>
+                <select id="f_dorm">
+                    <option value="">Все</option>
+                    <option value="1">Есть</option>
+                    <option value="0">Нет</option>
+                </select>
+            </div>
+
+            <button id="applyFilters" class="btn btn--primary">Применить</button>
+            <button id="resetFilters" class="btn btn--outline">Сбросить</button>
+        </div>
+
+        <!-- RESULT COUNT -->
+        <p id="resultCount" class="section__subtitle"></p>
+
+        <!-- UNIVERSITY GRID -->
+        <div id="uniGrid" class="cards-grid">
+            Загрузка...
+        </div>
+
+    </div>
+</section>
+
+
+
+<!-- FULLSCREEN MODAL (как в index.html) -->
+<div id="uniModal" class="uni-modal">
+    <div class="uni-modal__content">
+        <button class="uni-modal__close" onclick="closeUniversityModal()">×</button>
+        <div id="uniModalInner">Загрузка...</div>
+    </div>
+</div>
+
+
+
+<style>
+.filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 26px;
+}
+
+.filters__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filters__range input {
+    width: 100%;
+}
+</style>
+
+
+
+<script>
+/* -------------------------------------
+   LOAD UNIVERSITIES via API
+---------------------------------------*/
+
+function loadUniversities() {
+    const city = document.getElementById("f_city").value;
+    const type = document.getElementById("f_type").value;
+    const grants = document.getElementById("f_grants").value;
+    const min_price = document.getElementById("f_min").value;
+    const max_price = document.getElementById("f_max").value;
+    const lang = document.getElementById("f_lang").value;
+    const dorm = document.getElementById("f_dorm").value;
+
+    const params = new URLSearchParams({
+        city, type, grants, min_price, max_price, lang, dorm
+    });
+
+    fetch(`/api/university/filter/?${params.toString()}`)
+        .then(r => r.json())
+        .then(data => renderUniversities(data.universities));
+}
+
+document.getElementById("applyFilters").onclick = loadUniversities;
+
+document.getElementById("resetFilters").onclick = () => {
+    ["f_city","f_type","f_grants","f_min","f_max","f_lang","f_dorm"].forEach(id =>
+        document.getElementById(id).value = ""
+    );
+    loadUniversities();
+};
+
+
+function renderUniversities(list) {
+    const grid = document.getElementById("uniGrid");
+    const count = document.getElementById("resultCount");
+
+    if (!list.length) {
+        grid.innerHTML = "<p>Ничего не найдено.</p>";
+        count.innerHTML = "0 результатов";
+        return;
+    }
+
+    count.innerHTML = `${list.length} найдено`;
+
+    grid.innerHTML = list.map(u => `
+        <article class="uni-card" data-uni-id="${u.id}" onclick="openUniversityModal(${u.id})">
+
+            <div class="uni-card__image-placeholder">
+                ${u.image ? `<img src="${u.image}">` : "Фото"}
+            </div>
+
+            <div class="uni-card__body">
+                <h3 class="uni-card__title">${u.name}</h3>
+
+                <p class="uni-card__city">📍 ${u.city}</p>
+
+                <p class="uni-card__directions">
+                    🧩 ${u.categories.join(" · ")}
+                </p>
+
+                <p class="uni-card__price">
+                    💰 ${u.tuition_min} – ${u.tuition_max} ₸ / год
+                </p>
+
+                <p class="uni-card__grants">
+                    ${u.grants ? "✅ Есть гранты" : "— Гранты отсутствуют"}
+                </p>
+
+                <p class="uni-card__rating">⭐ ${u.rating} / 5</p>
+            </div>
+
+            <div class="uni-card__footer">
+                <button class="link-button"
+                        onclick="event.stopPropagation(); openUniversityModal(${u.id})">
+                    Подробнее
+                </button>
+
+                <label class="compare-toggle" onclick="event.stopPropagation();">
+                    <input type="checkbox" class="compare-checkbox" data-id="${u.id}">
+                    <span>Сравнить</span>
+                </label>
+            </div>
+
+        </article>
+    `).join("");
+}
+
+// Load first time
+loadUniversities();
+
+
+
+/* -------------------------------------
+   MODAL OPEN
+---------------------------------------*/
+function openUniversityModal(id) {
+    const modal = document.getElementById("uniModal");
+    const inner = document.getElementById("uniModalInner");
+
+    modal.style.display = "block";
+    inner.innerHTML = "Загрузка...";
+
+    fetch(`/api/university/${id}/detail/`)
+        .then(r => r.text())
+        .then(html => inner.innerHTML = html);
+}
+
+function closeUniversityModal() {
+    document.getElementById("uniModal").style.display = "none";
+}
+</script>
+
+{% endblock %}

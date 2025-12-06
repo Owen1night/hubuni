@@ -1,121 +1,120 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}HubUni – главная{% endblock %}
+{% block title %}HubUni — главная{% endblock %}
 
 {% block content %}
 
+<!-- HERO -->
 <section class="hero">
-    <div class="container hero__inner">
-        <div class="hero__text">
-            <h1 class="hero__title">
-                Единая цифровая платформа<br>
-                университетов Казахстана
-            </h1>
-            <p class="hero__subtitle">
-                Сравнивайте, изучайте и выбирайте образование без барьеров.
-            </p>
+    <div class="hero__inner">
+        <div class="hero__image">
+            <img src="{% static 'core/img/student.png' %}" class="hero__img">
+        </div>
 
-            <form class="hero__search" action="" method="get">
+        <div class="hero__content">
+            <h1 class="hero__title">Единая цифровая платформа<br> университетов Казахстана</h1>
+            <p class="hero__subtitle">Сравнивайте, изучайте и выбирайте образование без барьеров.</p>
+
+            <form class="hero__search" method="get">
                 {% if selected_category %}
                     <input type="hidden" name="category" value="{{ selected_category.slug }}">
                 {% endif %}
-                <span class="hero__search-icon">🔍</span>
-                <input type="text" class="hero__search-input"
-                       placeholder="Введите название университета или программы…"
-                       name="q">
-                <button type="submit" class="btn btn--primary hero__search-btn">
-                    найти
-                </button>
-            </form>
-        </div>
 
-        <div class="hero__image">
-            <div class="hero__image-placeholder">
-                <span>фото студента</span>
-            </div>
+                <div class="hero__search-wrapper">
+                    <span class="hero__search-icon">🔍</span>
+                    <input type="text" class="hero__search-input" name="q"
+                           placeholder="Введите название университета или программы…">
+                    <button class="btn hero__search-btn">найти</button>
+                </div>
+            </form>
         </div>
     </div>
 </section>
 
 
-<section class="section section--no-top">
+
+<!-- CATEGORY FILTERS -->
+<section id="categories" class="section section--no-top">
     <div class="container">
+
         <h2 class="section__title">Категории университетов</h2>
 
-        <div class="chips">
-            <a href="{% url 'home' %}"
-               class="chip {% if not selected_category %}chip--active{% endif %}">
+        <div class="chips chips--collapsed" id="chipsBox">
+            <a href="{% url 'home' %}" class="chip {% if not selected_category %}chip--active{% endif %}">
                 Все
             </a>
+
             {% for cat in categories %}
                 <a href="?category={{ cat.slug }}"
-                   class="chip {% if selected_category and cat.id == selected_category.id %}chip--active{% endif %}">
+                   class="chip {% if selected_category and selected_category.id == cat.id %}chip--active{% endif %}">
                     {{ cat.name }}
                 </a>
             {% endfor %}
         </div>
 
+        <button class="chip-showall" id="showAllChips">Показать все</button>
+
         <p class="section__subtitle">
             Показано {{ shown_count }} из {{ total_count }} университетов
-            {% if selected_category %}по категории «{{ selected_category.name }}»{% endif %}.
+            {% if selected_category %}по категории «{{ selected_category.name }}»{% endif %}
         </p>
 
+
+
+        <!-- UNIVERSITY CARDS GRID -->
         <div class="cards-grid">
+
             {% for uni in universities %}
-                <article class="uni-card">
-                    <div class="uni-card__header">
-                        <div class="uni-card__image-placeholder">
-                            {% if uni.main_image %}
-                                <img src="{{ uni.main_image.url }}" alt="{{ uni.short_name }}">
-                            {% else %}
-                                <span>Фото</span>
-                            {% endif %}
-                        </div>
-                    </div>
+            <article class="uni-card" data-uni-id="{{ uni.id }}" onclick="openUniversityModal({{ uni.id }})">
 
-                    <div class="uni-card__body">
-                        <h3 class="uni-card__title">{{ uni.full_name }}</h3>
+                <div class="uni-card__image-placeholder">
+                    {% if uni.main_image %}
+                        <img src="{{ uni.main_image.url }}" alt="{{ uni.name }}">
+                    {% else %}
+                        Фото
+                    {% endif %}
+                </div>
 
-                        <p class="uni-card__city">
-                            📍 {{ uni.get_city_display }}
-                        </p>
+                <div class="uni-card__body">
+                    <h3 class="uni-card__title">{{ uni.name }}</h3>
 
-                        <p class="uni-card__directions">
-                            🧩
-                            {% for cat in uni.categories.all %}
-                                {{ cat.name }}{% if not forloop.last %} · {% endif %}
-                            {% endfor %}
-                        </p>
+                    <p class="uni-card__city">📍 {{ uni.get_city_display }}</p>
 
-                        <p class="uni-card__price">
-                            💰 {{ uni.tuition_min|default:"—" }} – {{ uni.tuition_max|default:"—" }} ₸ в год
-                        </p>
+                    <p class="uni-card__directions">
+                        🧩 {% for cat in uni.categories.all %}
+                            {{ cat.name }}{% if not forloop.last %} · {% endif %}
+                        {% endfor %}
+                    </p>
 
-                        <p class="uni-card__grants">
-                            {% if uni.has_grants %}
-                                ✅ Есть гранты
-                            {% else %}
-                                — Гранты не указаны
-                            {% endif %}
-                        </p>
+                    <p class="uni-card__price">
+                        💰 {{ uni.tuition_min }} – {{ uni.tuition_max }} ₸ / год
+                    </p>
 
-                        <p class="uni-card__rating">
-                            ⭐ {{ uni.rating|default:"—" }} / 5
-                        </p>
-                    </div>
+                    <p class="uni-card__grants">
+                        {% if uni.has_grants %}
+                            ✅ Есть гранты
+                        {% else %}
+                            — Гранты отсутствуют
+                        {% endif %}
+                    </p>
 
-                    <div class="uni-card__footer">
-                        <a href="#" class="link-button">Подробнее</a>
+                    <p class="uni-card__rating">⭐ {{ uni.rating }} / 5</p>
+                </div>
 
-                        <label class="compare-toggle">
-                            <input type="checkbox">
-                            <span>Сравнить</span>
-                        </label>
-                    </div>
-                </article>
-            {% empty %}
-                <p>Пока нет университетов для отображения.</p>
+                <div class="uni-card__footer">
+                    <button class="link-button"
+                            onclick="event.stopPropagation(); openUniversityModal({{ uni.id }})">
+                        Подробнее
+                    </button>
+
+                    <label class="compare-toggle" onclick="event.stopPropagation();">
+                        <input type="checkbox" class="compare-checkbox" data-id="{{ uni.id }}">
+                        <span>Сравнить</span>
+                    </label>
+                </div>
+
+            </article>
             {% endfor %}
         </div>
 
@@ -127,21 +126,180 @@
                 </a>
             </div>
         {% endif %}
+
     </div>
 </section>
 
 
-<section class="section">
+
+<!-- FULLSCREEN MODAL -->
+<div id="uniModal" class="uni-modal">
+    <div class="uni-modal__content">
+        <button class="uni-modal__close" onclick="closeUniversityModal()">×</button>
+
+        <div id="uniModalInner">Загрузка...</div>
+    </div>
+</div>
+
+
+
+<!-- HEATMAP -->
+<section id="heatmap" class="section section--map">
     <div class="container">
-        <h2 class="section__title">Университетская тепловая карта</h2>
-        <p class="section__subtitle">
-            Исследуйте вузы визуально: стоимость, популярность, направления.
-        </p>
 
-        <div class="heatmap-placeholder">
-            карта
-        </div>
+        <h2 class="section__title">Университетская тепловая карта</h2>
+        <p class="section__subtitle">Стоимость, популярность и расположение вузов</p>
+
+        <div id="uniMap" style="width:100%; height:500px; border-radius:20px;"></div>
+
     </div>
 </section>
+
+
+
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const map = L.map('uniMap').setView([47.9, 67.3], 4.4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18
+}).addTo(map);
+
+function getColor(lv) {
+    if (lv === "low") return "#22c55e";
+    if (lv === "mid") return "#eab308";
+    return "#ef4444";
+}
+
+fetch("/api/universities/map/")
+    .then(r => r.json())
+    .then(data => {
+        data.universities.forEach(u => {
+            const icon = L.divIcon({
+                html: `
+                <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:4px solid ${getColor(u.tuition_level)};">
+                    <img src="${u.image}" style="width:100%;height:100%;object-fit:cover;">
+                </div>`,
+                className: "",
+                iconSize: [42,42]
+            });
+
+            L.marker([u.lat, u.lng], {icon})
+                .addTo(map)
+                .bindPopup(`<b>${u.name}</b><br>Средняя цена: ${u.avg_price} ₸`);
+        });
+    });
+</script>
+
+
+
+<!-- CATEGORY EXPAND -->
+<script>
+document.getElementById("showAllChips").onclick = () => {
+    document.getElementById("chipsBox").classList.remove("chips--collapsed");
+    document.getElementById("showAllChips").style.display = "none";
+};
+</script>
+
+
+
+<!-- MODAL LOGIC -->
+<script>
+function openUniversityModal(id) {
+    const modal = document.getElementById("uniModal");
+    const inner = document.getElementById("uniModalInner");
+
+    modal.style.display = "block";
+    inner.innerHTML = "Загрузка...";
+
+    fetch(`/api/university/${id}/detail/`)
+        .then(r => r.text())
+        .then(html => {
+            inner.innerHTML = html;
+        });
+}
+
+function closeUniversityModal() {
+    document.getElementById("uniModal").style.display = "none";
+}
+</script>
+
+
+
+<!-- COMPARE LOGIC (LOCALSTORAGE) -->
+<script>
+function loadCompare() {
+    return JSON.parse(localStorage.getItem("compare_unis") || "[]");
+}
+function saveCompare(list) {
+    localStorage.setItem("compare_unis", JSON.stringify(list));
+}
+
+document.querySelectorAll(".compare-checkbox").forEach(cb => {
+    const uniId = parseInt(cb.dataset.id);
+    const selected = loadCompare();
+
+    if (selected.includes(uniId)) {
+        cb.checked = true;
+    }
+
+    cb.addEventListener("change", e => {
+        e.stopPropagation();
+
+        let list = loadCompare();
+
+        if (cb.checked) {
+            if (!list.includes(uniId)) list.push(uniId);
+        } else {
+            list = list.filter(id => id !== uniId);
+        }
+
+        saveCompare(list);
+    });
+});
+</script>
+
+
+
+<style>
+.uni-modal {
+    display:none;
+    position:fixed;
+    z-index:9999;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    backdrop-filter:blur(6px);
+}
+
+.uni-modal__content {
+    width:70%;
+    max-height:90%;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    overflow-y:auto;
+    animation: fadeIn .3s ease;
+}
+
+.uni-modal__close {
+    position:absolute;
+    right:25px;
+    top:25px;
+    background:none;
+    border:none;
+    font-size:32px;
+    cursor:pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:scale(.95);}
+    to   {opacity:1; transform:scale(1);}
+}
+</style>
 
 {% endblock %}

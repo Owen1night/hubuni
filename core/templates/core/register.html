@@ -1,10 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Регистрация — UniHUB{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="section__title" style="font-size:32px; text-align:center; margin-bottom:8px;">
+            Создайте аккаунт UniHUB
+        </h1>
+        <p class="section__subtitle" style="text-align:center; margin-bottom:32px;">
+            Один профиль для поиска, сравнения и анализа всех университетов Казахстана.
+        </p>
+
+        <div style="
+            max-width:960px;
+            margin:0 auto;
+            background:#ffffff;
+            border-radius:32px;
+            box-shadow:0 24px 60px rgba(15,23,42,0.12);
+            padding:32px 40px 40px;
+            border:1px solid #dbeafe;
+        ">
+            <h2 style="font-size:20px; font-weight:700; margin-top:0; margin-bottom:24px;">
+                Основная информация
+            </h2>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div style="background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:16px;">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-grid-2">
+                    <!-- Full name -->
+                    <div class="form-field">
+                        <label class="form-label">Полное имя</label>
+                        <input type="text" name="{{ form.full_name.name }}"
+                               value="{{ form.full_name.value|default_if_none:'' }}"
+                               class="form-input">
+                        {% for e in form.full_name.errors %}
+                            <div class="form-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-field">
+                        <label class="form-label">Электронная почта</label>
+                        <input type="email" name="{{ form.email.name }}"
+                               value="{{ form.email.value|default_if_none:'' }}"
+                               class="form-input">
+                        {% for e in form.email.errors %}
+                            <div class="form-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-field">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" name="{{ form.password1.name }}" class="form-input">
+                        {% for e in form.password1.errors %}
+                            <div class="form-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Confirm password -->
+                    <div class="form-field">
+                        <label class="form-label">Подтвердите пароль</label>
+                        <input type="password" name="{{ form.password2.name }}" class="form-input">
+                        {% for e in form.password2.errors %}
+                            <div class="form-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="form-field" style="grid-column:1 / -1;">
+                        <label class="form-label">Номер телефона</label>
+                        <input type="text" name="{{ form.phone.name }}"
+                               value="{{ form.phone.value|default_if_none:'' }}"
+                               class="form-input">
+                        <div style="font-size:12px;color:#6b7280;margin-top:4px;">
+                            Формат: +7XXXXXXXXXX или 8XXXXXXXXXX
+                        </div>
+                        {% for e in form.phone.errors %}
+                            <div class="form-error">{{ e }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div style="margin-top:28px; display:flex; justify-content:center;">
+                    <button type="submit" class="btn btn--primary" style="min-width:220px;">
+                        Зарегистрироваться
+                    </button>
+                </div>
+
+                <p style="text-align:center; font-size:14px; margin-top:16px;">
+                    Уже есть аккаунт?
+                    <a href="{% url 'login' %}" style="color:#1d4ed8;">Войти</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+.form-grid-2 {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:18px 24px;
+}
+.form-field { display:flex; flex-direction:column; }
+.form-label {
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:4px;
+}
+.form-input {
+    border-radius:999px;
+    border:1px solid #d1d5db;
+    padding:8px 14px;
+    font-size:14px;
+    outline:none;
+}
+.form-input:focus {
+    border-color:#1d4ed8;
+    box-shadow:0 0 0 1px rgba(37,99,235,0.25);
+}
+.form-error {
+    margin-top:4px;
+    font-size:12px;
+    color:#b91c1c;
+}
+</style>
+{% endblock %}

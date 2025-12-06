@@ -1,5 +1,9 @@
 /* ----- Base ----- */
 
+html {
+    scroll-behavior: smooth;
+}
+
 *,
 *::before,
 *::after {
@@ -155,7 +159,7 @@ img {
 }
 
 .section__title {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     margin-bottom: 12px;
 }
@@ -171,75 +175,90 @@ img {
     text-align: center;
 }
 
-/* ----- Hero ----- */
+/* ----- HERO (Figma Layout 1 + blur) ----- */
 
 .hero {
-    padding: 40px 0 32px;
     background: #ffffff;
+    padding: 40px 0 60px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .hero__inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px;
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: 40px;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
     align-items: center;
+    min-height: 90vh;
+}
+
+.hero__image {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px; /* move a bit down so bottom cut is not visible on fullscreen */
+    position: relative;
+}
+
+.hero__img {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    object-fit: cover;
+    -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+}
+
+.hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .hero__title {
-    font-size: 32px;
-    line-height: 1.2;
-    margin: 0 0 16px;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
 }
 
 .hero__subtitle {
-    font-size: 15px;
+    font-size: 16px;
     color: #4b5563;
-    margin: 0 0 24px;
+    margin: 0;
 }
 
-.hero__search {
+.hero__search-wrapper {
     display: flex;
     align-items: center;
-    background: #f3f4f6;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
     border-radius: 999px;
-    padding: 4px 4px 4px 14px;
-    max-width: 560px;
+    padding: 10px 20px;
+    max-width: 520px;
+    gap: 12px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
 }
 
 .hero__search-icon {
     font-size: 16px;
-    margin-right: 8px;
 }
 
 .hero__search-input {
     flex: 1;
     border: none;
     outline: none;
-    background: transparent;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .hero__search-btn {
-    margin-left: 8px;
-}
-
-.hero__image {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.hero__image-placeholder {
-    width: 280px;
-    height: 260px;
-    border-radius: 32px;
-    background: linear-gradient(135deg, #1d4ed8, #38bdf8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #e5e7eb;
+    background: #1d4ed8;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 26px;
+    border: none;
     font-size: 14px;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
 }
 
 /* ----- Chips (категории) ----- */
@@ -275,32 +294,50 @@ img {
     color: #ffffff;
 }
 
+/* collapsed state – show only first row (first 7 items including "Все") */
+.chips--collapsed a:nth-child(n+8) {
+    display: none;
+}
+
+.chip-showall {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: none;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
 /* ----- University cards ----- */
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
 }
 
 .uni-card {
     background: #ffffff;
-    border-radius: 20px;
-    padding: 14px 14px 12px;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    border-radius: 28px;
+    padding: 0 0 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
     display: flex;
     flex-direction: column;
-    height: 100%;
+    overflow: hidden; /* for rounded corners with image */
 }
 
 .uni-card__header {
-    margin-bottom: 8px;
+    margin: 0;
 }
 
 .uni-card__image-placeholder {
     width: 100%;
-    height: 130px;
-    border-radius: 16px;
+    height: 220px;
     background: #e5e7eb;
     display: flex;
     align-items: center;
@@ -317,15 +354,16 @@ img {
 }
 
 .uni-card__body {
-    flex: 1;
+    padding: 14px 18px 0;
     font-size: 13px;
     color: #4b5563;
+    flex: 1;
 }
 
 .uni-card__title {
     font-size: 15px;
     font-weight: 600;
-    margin: 4px 0 4px;
+    margin: 6px 0 6px;
     color: #111827;
 }
 
@@ -337,14 +375,15 @@ img {
 .uni-card__price,
 .uni-card__grants,
 .uni-card__rating {
-    margin: 0 0 3px;
+    margin: 0 0 4px;
 }
 
 .uni-card__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 8px;
+    padding: 8px 18px 0;
+    font-size: 13px;
 }
 
 .compare-toggle {
@@ -357,11 +396,16 @@ img {
 
 /* ----- Heatmap placeholder ----- */
 
+.section--map {
+    padding-top: 56px;
+}
+
 .heatmap-placeholder {
     margin-top: 16px;
     border-radius: 24px;
     background: #e5e7eb;
-    height: 260px;
+    height: 480px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -369,19 +413,69 @@ img {
     font-size: 16px;
 }
 
+/* ----- About section ----- */
+
+.section--about {
+    background: #ffffff;
+}
+
+.about__text {
+    max-width: 780px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #4b5563;
+}
+
 /* ----- Footer ----- */
 
 .footer {
     border-top: 1px solid #e5e7eb;
-    background: #ffffff;
-    padding: 16px 0;
-    font-size: 12px;
-    color: #6b7280;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 20px 0;
+    font-size: 13px;
 }
 
 .footer__inner {
     display: flex;
     justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.footer__col {
+    min-width: 180px;
+}
+
+.footer__logo {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.footer__text {
+    color: #9ca3af;
+}
+
+.footer__links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.footer__links a {
+    color: #e5e7eb;
+}
+
+.footer__links a:hover {
+    color: #ffffff;
+}
+
+.footer__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #9ca3af;
 }
 
 /* ----- Responsive ----- */
@@ -389,13 +483,396 @@ img {
 @media (max-width: 900px) {
     .hero__inner {
         grid-template-columns: 1fr;
+        gap: 32px;
+        min-height: auto;
     }
 
     .hero__image {
-        justify-content: center;
+        order: -1;
+        margin-top: 10px;
     }
 
     .navbar__menu {
-        display: none; /* мобильде менюны жасыра береміз */
+        display: none;
     }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer__inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ----- Calculator page ----- */
+
+.calculator {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    gap: 32px;
+    align-items: flex-start;
+}
+
+.calculator__left {
+    min-width: 0;
+}
+
+.calculator__right {
+    min-width: 0;
+}
+
+.uni-card--selectable {
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    border: 1px solid transparent;
+}
+
+.uni-card--selectable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
+}
+
+.uni-card--selected {
+    border-color: #1d4ed8;
+    box-shadow: 0 24px 50px rgba(37, 99, 235, 0.35);
+}
+
+.calc-panel {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 20px 20px 22px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    position: sticky;
+    top: 88px;
+}
+
+.calc-panel__header {
+    margin-bottom: 16px;
+}
+
+.calc-panel__title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.calc-panel__subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.calc-panel__section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.calc-panel__section-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 10px;
+}
+
+.calc-panel__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.calc-panel__row--inputs {
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.calc-panel__row--total {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e5e7eb;
+    font-weight: 600;
+}
+
+.calc-panel__label {
+    color: #4b5563;
+}
+
+.calc-panel__value {
+    font-weight: 600;
+    color: #111827;
+}
+
+.calc-panel__input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.calc-panel__input {
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+}
+
+.calc-panel__input:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+}
+
+.calc-docs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.calc-docs__item {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 6px;
+}
+
+.calc-docs__item::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 11px;
+    color: #16a34a;
+}
+
+/* responsive for calculator */
+
+@media (max-width: 900px) {
+    .calculator {
+        grid-template-columns: 1fr;
+    }
+
+    .calc-panel {
+        position: static;
+        margin-top: 12px;
+    }
+}
+
+/* ----- University detail modal ----- */
+
+.uni-detail {
+    font-size: 14px;
+    color: #111827;
+}
+
+.uni-detail__top {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: flex-start;
+}
+
+.uni-detail__image {
+    flex: 0 0 280px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.uni-detail__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uni-detail__image-placeholder {
+    width: 100%;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+}
+
+.uni-detail__top-info {
+    flex: 1;
+}
+
+.uni-detail__title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.uni-detail__line {
+    margin: 2px 0;
+}
+
+.uni-detail__actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.uni-detail__section {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.uni-detail__section-title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.uni-detail__text {
+    margin: 0;
+    line-height: 1.6;
+    color: #4b5563;
+}
+
+.uni-detail__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.uni-detail__table th,
+.uni-detail__table td {
+    border: 1px solid #e5e7eb;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.uni-detail__table th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.uni-detail__compare {
+    margin-top: 14px;
+}
+
+.uni-detail__compare-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.uni-detail__compare-form {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.uni-detail__compare-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.uni-detail__compare-fields input {
+    flex: 1;
+    min-width: 120px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.uni-detail__compare-result {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #111827;
+}
+
+.uni-detail__programs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.uni-detail__program-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    font-size: 13px;
+}
+
+.uni-detail__program-card h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.uni-detail__3d-wrapper {
+    margin-top: 8px;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+/* profile page */
+
+.profile-page__header {
+    margin-bottom: 16px;
+}
+
+.profile-page__title {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.profile-page__subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.profile-page__subtitle-big {
+    margin: 24px 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.profile-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 18px 20px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+    max-width: 360px;
+    font-size: 14px;
+}
+
+.profile-card__name {
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+
+.profile-card__edit {
+    margin-top: 10px;
+}
+
+.navbar__right {
+    display: flex;
+    align-items: center;
+    gap: 16px !important;
+}
+
+.navbar__right .btn {
+    white-space: nowrap;
+    padding: 10px 18px;
 }

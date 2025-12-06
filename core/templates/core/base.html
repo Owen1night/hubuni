@@ -5,22 +5,31 @@
     <meta charset="UTF-8">
     <title>{% block title %}HubUni{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
 </head>
+
 <body>
+
 <header class="navbar">
     <div class="container navbar__inner">
+
+        <!-- LEFT SIDE -->
         <div class="navbar__left">
-            <div class="navbar__logo">UniHUB</div>
+            <a href="{% url 'home' %}" class="navbar__logo">UniHUB</a>
+
             <nav class="navbar__menu">
-                <a href="{% url 'home' %}" class="navbar__link">Университеты</a>
-                <a href="#" class="navbar__link">Программы</a>
-                <a href="#" class="navbar__link">Тепловая карта</a>
-                <a href="#" class="navbar__link">Инклюзивность</a>
-                <a href="#" class="navbar__link">Calculator Mode</a>
-                <a href="#" class="navbar__link">О проекте</a>
+                <a href="{% url 'university_list' %}" class="navbar__link">Университеты</a>
+                <a href="{% url 'home' %}#heatmap" class="navbar__link">Тепловая карта</a>
+                <a href="{% url 'home' %}#categories" class="navbar__link">Инклюзивность</a>
+                <a href="{% url 'calculator' %}" class="navbar__link">Calculator Mode</a>
+                <a href="{% url 'compare' %}" class="navbar__link">Сравнение</a>
+                <a href="{% url 'about' %}" class="navbar__link">О проекте</a>
             </nav>
         </div>
+
+        <!-- RIGHT SIDE -->
         <div class="navbar__right">
             <div class="navbar__langs">
                 <button class="link-button link-button--muted">KZ</button>
@@ -29,19 +38,35 @@
                 <span>|</span>
                 <button class="link-button link-button--muted">EN</button>
             </div>
-            <a href="#" class="btn btn--primary">Войти</a>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn btn--outline" style="margin-right:6px;">
+                    Мой профиль
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn--primary">
+                    Выйти
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn--primary">Войти</a>
+            {% endif %}
         </div>
+
     </div>
 </header>
 
+
+<!-- PAGE CONTENT -->
 <main class="page">
     {% block content %}{% endblock %}
 </main>
 
+
+<!-- FOOTER -->
 <footer class="footer">
     <div class="container footer__inner">
         <span>© {{ now|date:"Y" }} HubUni. Все права защищены.</span>
     </div>
 </footer>
+
 </body>
 </html>

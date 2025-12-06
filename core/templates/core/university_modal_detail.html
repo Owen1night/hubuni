@@ -1,0 +1,114 @@
+<div class="uni-detail">
+
+    <div class="uni-detail__header">
+        <div class="uni-detail__image-wrap">
+            {% if uni.main_image %}
+                <img src="{{ uni.main_image.url }}" class="uni-detail__image" alt="{{ uni.name }}">
+            {% else %}
+                <div class="uni-detail__image-placeholder">Фото</div>
+            {% endif %}
+        </div>
+
+        <div class="uni-detail__info">
+            <h2 class="uni-detail__title">{{ uni.name }}</h2>
+
+            <p><b>Город:</b> {{ uni.get_city_display }}</p>
+            <p><b>Стоимость:</b> {{ uni.tuition_min }} – {{ uni.tuition_max }} ₸ в год</p>
+            <p><b>Рейтинг:</b> {{ uni.rating }} / 5</p>
+            <p><b>Направления:</b>
+                {% for c in uni.categories.all %}
+                    {{ c.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    —
+                {% endfor %}
+            </p>
+
+            <div class="uni-detail__buttons">
+                <button class="btn btn--outline">
+                    Оставить заявку
+                </button>
+
+                {% if user.is_authenticated %}
+                    <button class="btn btn--primary"
+                            id="save-btn-{{ uni.id }}"
+                            onclick="saveUniversity({{ uni.id }})">
+                        {% if is_saved %}
+                            Удалить из сохранённых
+                        {% else %}
+                            Сохранить
+                        {% endif %}
+                    </button>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn--primary">
+                        Войти, чтобы сохранить
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h3>Основная информация</h3>
+    <p>{{ uni.description|default:"Информация будет добавлена позже." }}</p>
+
+    <hr>
+
+    <h3>Условия поступления</h3>
+    <table class="uni-table">
+        <thead>
+            <tr>
+                <th>Условие</th>
+                <th>Значение</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>GPA</td>
+                <td>{{ uni.gpa_required|default:"—" }}</td>
+            </tr>
+            <tr>
+                <td>IELTS</td>
+                <td>{{ uni.ielts_required|default:"—" }}</td>
+            </tr>
+            <tr>
+                <td>ЕНТ</td>
+                <td>{{ uni.ent_required|default:"—" }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h3>3D карта</h3>
+    <p>Скоро здесь появится ссылка на 3D-тур по кампусу.</p>
+</div>
+
+<script>
+function saveUniversity(id) {
+    fetch("/api/save_university/" + id + "/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.message || "Готово");
+
+        const btn = document.getElementById("save-btn-" + id);
+        if (!btn) return;
+
+        if (data.status === "added") {
+            btn.textContent = "Удалить из сохранённых";
+        } else if (data.status === "removed") {
+            btn.textContent = "Сохранить";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Ошибка при сохранении университета");
+    });
+}
+</script>

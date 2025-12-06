@@ -1,10 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Мой профиль — HubUni{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container profile-page">
+
+        <div class="profile-page__header">
+            <h1 class="profile-page__title">Мой профиль</h1>
+            <p class="profile-page__subtitle">
+                Управляйте личной информацией, предпочтениями и сохранёнными университетами.
+            </p>
+        </div>
+
+        <div class="profile-page__top">
+            <div class="profile-card">
+                <p class="profile-card__name">
+                    {{ profile.full_name|default:request.user.first_name }}
+                </p>
+                <p>{{ request.user.email }}</p>
+                <p>{{ profile.phone }}</p>
+
+                <button class="btn btn--outline profile-card__edit">
+                    Изменить
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-page__saved">
+            <h2 class="profile-page__subtitle-big">Сохранённые университеты</h2>
+
+            {% if saved_unis %}
+                <div class="cards-grid">
+                    {% for item in saved_unis %}
+                        {% with uni=item.university %}
+                        <article class="uni-card">
+                            <div class="uni-card__image-placeholder">
+                                {% if uni.main_image %}
+                                    <img src="{{ uni.main_image.url }}" alt="{{ uni.name }}">
+                                {% else %}
+                                    Фото
+                                {% endif %}
+                            </div>
+
+                            <div class="uni-card__body">
+                                <h3 class="uni-card__title">{{ uni.name }}</h3>
+
+                                <p class="uni-card__city">📍 {{ uni.get_city_display }}</p>
+
+                                <p class="uni-card__directions">
+                                    🧩 {% for cat in uni.categories.all %}
+                                        {{ cat.name }}{% if not forloop.last %} · {% endif %}
+                                    {% endfor %}
+                                </p>
+
+                                <p class="uni-card__price">
+                                    💰 {{ uni.tuition_min }} – {{ uni.tuition_max }} ₸ / год
+                                </p>
+
+                                <p class="uni-card__rating">
+                                    ⭐ {{ uni.rating }} / 5
+                                </p>
+                            </div>
+
+                            <div class="uni-card__footer">
+                                <button class="link-button"
+                                        onclick="openUniversityModal({{ uni.id }})">
+                                    Подробнее
+                                </button>
+                            </div>
+                        </article>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Вы ещё не сохранили ни одного университета.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

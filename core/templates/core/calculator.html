@@ -1,10 +1,269 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "core/base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}HubUni – Calculator Mode{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <div class="container">
+        <h1 class="section__title">Calculator Mode</h1>
+        <p class="section__subtitle">
+            Выберите университет, введите расходы на общежитие — и мы покажем примерный годовой бюджет и список документов.
+        </p>
+
+        <div class="calculator">
+            <!-- LEFT: UNIVERSITY CARDS -->
+            <div class="calculator__left">
+                <div class="cards-grid">
+
+                    {% for uni in universities %}
+                        <article class="uni-card uni-card--selectable"
+                                 data-uni-card
+                                 data-id="{{ uni.id }}"
+                                 data-name="{{ uni.name }}"
+                                 data-city="{{ uni.get_city_display }}"
+                                 data-tuition-min="{{ uni.tuition_min }}"
+                                 data-tuition-max="{{ uni.tuition_max }}"
+                                 data-has-grants="{{ uni.has_grants|yesno:'true,false' }}"
+                                 data-rating="{{ uni.rating }}"
+                                 data-ielts="{{ uni.ielts_required|default_if_none:'' }}"
+                                 data-ent="{{ uni.ent_required|default_if_none:'' }}">
+
+                            <div class="uni-card__header">
+                                <div class="uni-card__image-placeholder">
+                                    {% if uni.main_image %}
+                                        <img src="{{ uni.main_image.url }}" alt="{{ uni.name }}">
+                                    {% else %}
+                                        <span>Фото</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="uni-card__body">
+                                <h3 class="uni-card__title">{{ uni.name }}</h3>
+
+                                <p class="uni-card__city">📍 {{ uni.get_city_display }}</p>
+
+                                <p class="uni-card__directions">
+                                    🧩
+                                    {% for cat in uni.categories.all %}
+                                        {{ cat.name }}{% if not forloop.last %} · {% endif %}
+                                    {% endfor %}
+                                </p>
+
+                                <p class="uni-card__price">
+                                    💰 {{ uni.tuition_min }} – {{ uni.tuition_max }} ₸ / год
+                                </p>
+
+                                <p class="uni-card__grants">
+                                    {% if uni.has_grants %}
+                                        ✅ Есть гранты
+                                    {% else %}
+                                        — Гранты не указаны
+                                    {% endif %}
+                                </p>
+
+                                <p class="uni-card__rating">
+                                    ⭐ {{ uni.rating }} / 5
+                                </p>
+                            </div>
+
+                            <div class="uni-card__footer">
+                                <button type="button"
+                                        class="btn btn--outline calc-select-btn">
+                                    Выбрать
+                                </button>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <p>Университетов пока нет.</p>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- RIGHT: CALCULATION PANEL -->
+            <aside class="calculator__right">
+                <div class="calc-panel">
+                    <div class="calc-panel__header">
+                        <h2 class="calc-panel__title" id="calcUniName">Университет не выбран</h2>
+                        <p class="calc-panel__subtitle" id="calcUniMeta">Выберите университет слева</p>
+                    </div>
+
+                    <div class="calc-panel__section">
+                        <h3 class="calc-panel__section-title">Расходы</h3>
+
+                        <div class="calc-panel__row">
+                            <span class="calc-panel__label">Учёба (средняя стоимость в год)</span>
+                            <span class="calc-panel__value" id="calcStudyCost">—</span>
+                        </div>
+
+                        <div class="calc-panel__row calc-panel__row--inputs">
+                            <div class="calc-panel__input-group">
+                                <label for="calcDormPerMonth" class="calc-panel__label">
+                                    Общежитие в месяц, ₸
+                                </label>
+                                <input type="number" id="calcDormPerMonth"
+                                       class="calc-panel__input"
+                                       value="60000" min="0" step="5000">
+                            </div>
+
+                            <div class="calc-panel__input-group">
+                                <label for="calcMonths" class="calc-panel__label">
+                                    Кол-во месяцев в году
+                                </label>
+                                <input type="number" id="calcMonths"
+                                       class="calc-panel__input"
+                                       value="10" min="1" max="12">
+                            </div>
+                        </div>
+
+                        <div class="calc-panel__row">
+                            <span class="calc-panel__label">Общежитие за год</span>
+                            <span class="calc-panel__value" id="calcDormCost">—</span>
+                        </div>
+
+                        <div class="calc-panel__row calc-panel__row--total">
+                            <span class="calc-panel__label">Итого за год (учёба + проживание)</span>
+                            <span class="calc-panel__value" id="calcTotalCost">—</span>
+                        </div>
+                    </div>
+
+                    <div class="calc-panel__section">
+                        <h3 class="calc-panel__section-title">Документы для поступления</h3>
+                        <ul class="calc-docs" id="calcDocuments">
+                            <li class="calc-docs__item">Выберите университет, чтобы увидеть список документов.</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll("[data-uni-card]");
+        const dormPerMonthInput = document.getElementById("calcDormPerMonth");
+        const monthsInput = document.getElementById("calcMonths");
+
+        const uniNameEl = document.getElementById("calcUniName");
+        const uniMetaEl = document.getElementById("calcUniMeta");
+        const studyCostEl = document.getElementById("calcStudyCost");
+        const dormCostEl = document.getElementById("calcDormCost");
+        const totalCostEl = document.getElementById("calcTotalCost");
+        const docsListEl = document.getElementById("calcDocuments");
+
+        let currentCard = null;
+
+        function formatMoney(value) {
+            if (!value || isNaN(value)) return "—";
+            return value.toLocaleString('ru-RU') + " ₸";
+        }
+
+        function buildDocuments(data) {
+            const docs = [
+                "Аттестат/диплом об образовании",
+                "Паспорт или удостоверение личности",
+                "Фотография 3×4",
+                "Медицинская справка (обычно форма 075-У)"
+            ];
+
+            if (data.ent) {
+                docs.push("Сертификат ЕНТ (минимум " + data.ent + " баллов)");
+            }
+            if (data.ielts) {
+                docs.push("Сертификат IELTS " + data.ielts + "+ или эквивалент");
+            }
+            if (data.hasGrants) {
+                docs.push("При наличии гранта — подтверждение гранта / договора");
+            }
+
+            docsListEl.innerHTML = "";
+            docs.forEach(function (text) {
+                const li = document.createElement("li");
+                li.className = "calc-docs__item";
+                li.textContent = text;
+                docsListEl.appendChild(li);
+            });
+        }
+
+        function recalc(data) {
+            const tuitionMin = parseInt(data.tuitionMin || "0", 10);
+            const tuitionMax = parseInt(data.tuitionMax || "0", 10);
+            const avgTuition = Math.round((tuitionMin + tuitionMax) / 2) || 0;
+
+            const dormPerMonth = parseInt(dormPerMonthInput.value || "0", 10);
+            const months = parseInt(monthsInput.value || "0", 10);
+
+            const dormYear = dormPerMonth * months;
+            const total = avgTuition + dormYear;
+
+            studyCostEl.textContent = formatMoney(avgTuition);
+            dormCostEl.textContent = formatMoney(dormYear);
+            totalCostEl.textContent = formatMoney(total);
+        }
+
+        function selectCard(card) {
+            if (currentCard) {
+                currentCard.classList.remove("uni-card--selected");
+            }
+            currentCard = card;
+            currentCard.classList.add("uni-card--selected");
+
+            const data = {
+                name: card.dataset.name || "",
+                city: card.dataset.city || "",
+                tuitionMin: card.dataset.tuitionMin || "",
+                tuitionMax: card.dataset.tuitionMax || "",
+                hasGrants: card.dataset.hasGrants === "true",
+                rating: card.dataset.rating || "",
+                ielts: card.dataset.ielts || "",
+                ent: card.dataset.ent || ""
+            };
+
+            uniNameEl.textContent = data.name || "Университет не выбран";
+
+            let metaText = "";
+            if (data.city) {
+                metaText += "Город: " + data.city;
+            }
+            if (data.rating) {
+                metaText += (metaText ? " · " : "") + "Рейтинг: " + data.rating + " / 5";
+            }
+            uniMetaEl.textContent = metaText || "Выберите университет слева";
+
+            buildDocuments(data);
+            recalc(data);
+        }
+
+        cards.forEach(function (card) {
+            const btn = card.querySelector(".calc-select-btn");
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    selectCard(card);
+                    // чтобы панель была видна на маленьких экранах
+                    document.querySelector(".calculator__right").scrollIntoView({behavior: "smooth"});
+                });
+            }
+        });
+
+        dormPerMonthInput.addEventListener("input", function () {
+            if (!currentCard) return;
+            recalc(currentCard.dataset);
+        });
+
+        monthsInput.addEventListener("input", function () {
+            if (!currentCard) return;
+            recalc(currentCard.dataset);
+        });
+
+        // Автоматически выбираем первый университет, если он есть
+        if (cards.length > 0) {
+            selectCard(cards[0]);
+        }
+    });
+</script>
+
+{% endblock %}

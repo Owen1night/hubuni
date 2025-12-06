@@ -61,7 +61,7 @@ class University(models.Model):
         verbose_name="Категории",
     )
 
-    # Стоимость обучения (за год), для фильтра и тепловой карты
+    # Стоимость обучения (за год)
     tuition_min = models.PositiveIntegerField(
         verbose_name="Минимальная стоимость в год, ₸",
         help_text="Например, 1200000",
@@ -73,7 +73,7 @@ class University(models.Model):
 
     has_grants = models.BooleanField(default=False, verbose_name="Есть гранты")
 
-    # Рейтинг и популярность (для карточек и размера точки на карте)
+    # Рейтинг и популярность
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=1,
@@ -85,7 +85,7 @@ class University(models.Model):
         verbose_name="Популярность (чем больше, тем больше точка на карте)",
     )
 
-    # Языки обучения (простые флажки)
+    # Языки обучения
     language_kz = models.BooleanField(default=False, verbose_name="Казахский язык")
     language_ru = models.BooleanField(default=False, verbose_name="Русский язык")
     language_en = models.BooleanField(default=False, verbose_name="Английский язык")
@@ -108,7 +108,7 @@ class University(models.Model):
         verbose_name="Есть общежитие",
     )
 
-    # Требования для поступления (для модалки и кнопки «Для меня»)
+    # Требования для поступления
     gpa_required = models.DecimalField(
         max_digits=3,
         decimal_places=1,
@@ -127,6 +127,13 @@ class University(models.Model):
         null=True,
         blank=True,
         verbose_name="Минимальный балл ЕНТ",
+    )
+
+    # 3D виртуальный тур (НОВЫЙ)
+    virtual_tour_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Ссылка на 3D-тур (виртуальная экскурсия)",
     )
 
     # Координаты для карты
@@ -155,13 +162,12 @@ class University(models.Model):
     @property
     def tuition_level(self):
         """
-        Условное деление для тепловой карты:
+        Делим цены для тепловой карты:
         - low  : зелёный
         - mid  : жёлтый
         - high : красный
         """
         avg = (self.tuition_min + self.tuition_max) / 2
-        # Пороговые значения можно потом изменить
         if avg < 1_200_000:
             return "low"
         elif avg < 1_800_000:
@@ -172,7 +178,6 @@ class University(models.Model):
 class Program(models.Model):
     """
     Отдельные программы внутри вуза (IT, Data Science и т.п.).
-    Можно показывать внизу модального окна «Программы».
     """
     DEGREE_CHOICES = [
         ("bachelor", "Бакалавриат"),
@@ -198,7 +203,7 @@ class Program(models.Model):
         verbose_name="Длительность обучения (лет)",
     )
 
-    # Можно переопределить язык и цену конкретной программы
+    # Языки конкретной программы
     language_kz = models.BooleanField(default=False, verbose_name="Казахский язык")
     language_ru = models.BooleanField(default=False, verbose_name="Русский язык")
     language_en = models.BooleanField(default=False, verbose_name="Английский язык")
@@ -219,19 +224,19 @@ class Program(models.Model):
 
 class UserProfile(models.Model):
     """
-    Профиль пользователя (для «Для меня», сохранённых вузов и т.п.).
+    Профиль пользователя (для “Для меня”, сохранённых вузов и рекомендаций)
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
 
     full_name = models.CharField(max_length=255, blank=True, verbose_name="Полное имя")
     phone = models.CharField(max_length=50, blank=True, verbose_name="Телефон")
 
-    # Учебные интересы
     planned_year = models.PositiveIntegerField(
         null=True,
         blank=True,
         verbose_name="Планируемый год поступления",
     )
+
     interested_categories = models.ManyToManyField(
         Category,
         related_name="interested_users",
@@ -239,7 +244,7 @@ class UserProfile(models.Model):
         verbose_name="Интересующие направления",
     )
 
-    # Личные баллы для кнопки «Для меня»
+    # Личные баллы для анализа "подхожу ли я"
     my_gpa = models.DecimalField(
         max_digits=3,
         decimal_places=1,
@@ -266,8 +271,7 @@ class UserProfile(models.Model):
 
 class SavedUniversity(models.Model):
     """
-    Сохранённые / добавленные в калькулятор вузы.
-    Используем и в профиле, и в Calculator Mode.
+    Сохранённые пользователем университеты (профиль + calculator mode)
     """
     user = models.ForeignKey(
         User,
